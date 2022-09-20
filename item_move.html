@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+    /*  color variables */
+    /* whole document */
+    body {
+        background-image: url("https://i.imgur.com/EUsXMKW.png");
+        background-repeat: no-repeat;
+        background-color: #111111;
+        font-family: Helvetica, sans-serif;
+        color: #ffffff;
+        margin: 10%;
+        /* makes text unselectable */
+        -webkit-user-select: none;
+        /* Safari */
+        -moz-user-select: none;
+        /* Firefox */
+        -ms-user-select: none;
+        /* IE10+/Edge */
+        user-select: none;
+        /* Standard */
+    }
+
+    /* outer container */
+    .grid-container {
+        display: grid;
+        opacity: 0.6;
+        grid-template-columns: 1fr 0.3fr 1fr;
+        background: #000000;
+        padding: 1% 1% 1.5% 1%;
+        grid-gap: 1%;
+        text-align: center;
+        max-height: 30em;
+    }
+
+    /* inventory/storage middle layer container */
+    .item-container {
+        display: grid;
+        overflow: scroll;
+        overflow-x: hidden;
+        background-color: #111111;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: auto;
+        max-height: 25em;
+    }
+
+    /* individual inventory items */
+    .item-cell {
+        border-style: solid;
+        border-width: 0.1em;
+        height: 6em;
+    }
+
+    /* text boxes underneath items */
+    .overlay {
+        margin: 1em;
+    }
+
+    /* photo images in inventory/storage */
+    .item-cell img {
+        height: 2.5em;
+        cursor: move;
+        padding: 1em 0.8em 0em 0.8em;
+    }
+
+    /* makes cells change colour on hover */
+    .item-cell:hover {
+        background-color: yellow;
+        color: #000000;
+    }
+
+    /* actions middle layer container */
+    .action-container {
+        display: grid;
+        padding: 4% 4% 4% 4%;
+        grid-gap: 2%;
+        background-color: #111111;
+        max-height: 28em;
+    }
+
+    /* multiplier container */
+    .multiplier {
+        display: grid;
+        padding: 2% 2% 4% 2%;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    /* multiplier + and - buttons */
+    #down, #up {
+        width: 1em;
+        font-size: 2em;
+    }
+
+    /* all input fields */
+    input {
+        width: 3.7em;
+        text-align: center;
+        font-size: 1.5em;
+        border: 1px solid #cccccc;
+    }
+
+    /* outer container */
+    .hotbar-grid-container {
+        margin-top: 50px;
+        display: grid;
+        opacity: 0.6;
+        background: #000000;
+        padding: 1% 1% 1% 1%;
+        grid-gap: 1%;
+        text-align: center;
+        max-height: 30em;
+    }
+
+    /* inventory/storage middle layer container */
+    .hotbar-item-container {
+        display: grid;
+        padding: 0.5em;
+        grid-gap: 0.5em;
+        background-color: #111111;
+        grid-template-columns: repeat(10, 1fr);
+        grid-template-rows: auto;
+        max-height: 25em;
+    }
+
+    /* individual inventory items */
+    .hotbar-item-cell {
+        background-color: #cccccc;
+        height: 6em;
+    }
+
+    /* photo images in inventory/storage */
+    .hotbar-item-cell img {
+        height: 2.5em;
+        cursor: move;
+        padding: 1em 0.8em 0em 0.8em;
+    }
+
+    /* numbers denoting which hotkey is attached */
+    .hotkey-overlay {
+        display: grid;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: rgba(255, 255, 255, 0.6);
+        color: #000000;
+        padding: 6%;
+    }
+</style>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!-- navigation -->
+<header>
+    <section>
+    </section>
+</header>
+<main>
+    <section>
+        <div class="grid-container">
+            <!-- section titles -->
+            <div>
+                Inventory
+            </div>
+            <div>
+                Actions
+            </div>
+            <div>
+                Storage
+            </div>
+            <!-- inventory -->
+            <div class="item-container">
+
+                <div class="item-cell" id="i1">
+                    <div class="item">
+                        <div class="overlay"
+                             style="text-align: center; color: red; width: 100%; height: 100%; cursor: move"
+                        ">
+                        Pistol
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i2">
+                <div class="item">
+                    <img src="https://i.imgur.com/62XOJRo.png" alt="Nightstick"/>
+                    <div class="overlay">
+                        Nightstick
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i3">
+            </div>
+
+            <div class="item-cell" id="i4">
+                <div class="item">
+                    <img src="https://i.imgur.com/KyJHqZb.png" alt="Taser"/>
+                    <div class="overlay">
+                        Taser
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i5">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/VDsFdmg.png" alt="Blue Waffle"/>
+                    <div class="overlay">
+                        Blue Waffle
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i6">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/Gr4OB7y.png" alt="Chicken Kiev"/>
+                    <div class="overlay">
+                        Chicken Kiev
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i7">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/cWLeZvY.png" alt="Burger"/>
+                    <div class="overlay">
+                        Cheeseburger
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i8">
+            </div>
+
+            <div class="item-cell" id="i9">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/HDFnGHm.png" alt="Soylent Green"/>
+                    <div class="overlay">
+                        Soylent Green
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i10">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/oxoNUXW.png" alt="Water"/>
+                    <div class="overlay">
+                        Water
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i11">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/sGpLkhA.png" alt="Chocolate Milk"/>
+                    <div class="overlay">
+                        Chocolate Milk
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i12">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/gxZwJwQ.png" alt="Fudge"/>
+                    <div class="overlay">
+                        Tactical Fudge
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i13">
+
+            </div>
+
+            <div class="item-cell" id="i14">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/HDFnGHm.png" alt="Soylent Green"/>
+                    <div class="overlay">
+                        Soylent Green
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i15">
+            </div>
+
+            <div class="item-cell" id="i16">
+            </div>
+
+            <div class="item-cell" id="i17">
+            </div>
+
+            <div class="item-cell" id="i18">
+            </div>
+
+            <div class="item-cell" id="i19">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/uUHnIHF.png" alt="Coffee"/>
+                    <div class="overlay">
+                        Coffee
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="item-cell" id="i20">
+            </div>
+
+            <div class="item-cell" id="i21">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/HDFnGHm.png" alt="Soylent Green"/>
+                    <div class="overlay">
+                        Soylent Green
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="i22">
+            </div>
+
+            <div class="item-cell" id="i23">
+            </div>
+
+            <div class="item-cell" id="i24">
+            </div>
+
+        </div>
+        <!-- actions -->
+        <div class="action-container">
+            <button>Search</button>
+            <!-- multiplier -->
+            <div class="multiplier">
+                <input id="down" type="button" value="-" onclick="down('1');"/>
+                <input type="text" id="num" value="1"/>
+                <input id="up" type="button" value="+" onclick="up('');"/>
+            </div>
+            <!-- use -->
+            <button>Use</button>
+            <!-- give -->
+            <button>Give</button>
+        </div>
+        <!-- storage -->
+        <div class="item-container">
+
+            <div class="item-cell" id="s1">
+                <div class="item">
+                    <img src="https://i.imgur.com/A6GYYlb.png" alt="Jerrycan"/>
+                    <div class="overlay">
+                        Jerrycan
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="s2">
+            </div>
+
+            <div class="item-cell" id="s3">
+            </div>
+
+            <div class="item-cell" id="s4">
+                <div class="item">
+                    <img src="https://i.imgur.com/dEUIjGB.png" alt="Switchblade"/>
+                    <div class="overlay">
+                        Switchblade
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="s5">
+            </div>
+
+            <div class="item-cell" id="s6">
+            </div>
+
+            <div class="item-cell" id="s7">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/VDsFdmg.png" alt="Blue Waffle"/>
+                    <div class="overlay">
+                        Blue Waffle
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="s8">
+            </div>
+
+            <div class="item-cell" id="s9">
+            </div>
+
+            <div class="item-cell" id="s10">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/emZzpja.png" alt="Pingaz"/>
+                    <div class="overlay">
+                        Happy Pills
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="s11">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/uUHnIHF.png" alt="Coffee"/>
+                    <div class="overlay">
+                        Coffee
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="s12">
+            </div>
+
+            <div class="item-cell" id="s13">
+            </div>
+
+            <div class="item-cell" id="s14">
+                <div class="item stackable">
+                    <img src="https://i.imgur.com/HDFnGHm.png" alt="Soylent Green"/>
+                    <div class="overlay">
+                        Soylent Green
+                    </div>
+                </div>
+            </div>
+
+            <div class="item-cell" id="s15">
+            </div>
+
+            <div class="item-cell" id="s16">
+            </div>
+
+            <div class="item-cell" id="s17">
+            </div>
+
+            <div class="item-cell" id="s18">
+            </div>
+
+            <div class="item-cell" id="s19">
+            </div>
+
+            <div class="item-cell" id="s20">
+            </div>
+
+            <div class="item-cell" id="s21">
+            </div>
+
+            <div class="item-cell" id="s22">
+            </div>
+
+            <div class="item-cell" id="s23">
+            </div>
+
+            <div class="item-cell" id="s24">
+            </div>
+
+        </div>
+        </div>
+    </section>
+
+    <!-- hotbar section -->
+    <section>
+        <div class="hotbar-grid-container">
+            <div class="hotbar-item-container">
+                <div class="hotbar-item-cell" id="h1">
+
+                    <div class="item">
+                        <img src="https://i.imgur.com/KyJHqZb.png" alt="Taser"/>
+                        <div class="overlay">
+                            Taser
+                        </div>
+                    </div>
+                </div>
+                <div class="hotbar-item-cell" id="h2">
+                </div>
+                <div class="hotbar-item-cell" id="h3">
+                </div>
+                <div class="hotbar-item-cell" id="h4">
+                </div>
+                <div class="hotbar-item-cell" id="h5">
+                </div>
+                <div class="hotbar-item-cell" id="h6">
+                </div>
+                <div class="hotbar-item-cell" id="h7">
+                </div>
+                <div class="hotbar-item-cell" id="h8">
+                </div>
+                <div class="hotbar-item-cell" id="h9">
+                </div>
+                <div class="hotbar-item-cell" id="h0">
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+<script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js" type="text/javascript"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.1/jquery-ui.min.js"></script>
+<script>
+    //makes the + button do addition
+    function up(max) {
+        document.getElementById("num").value = parseInt(document.getElementById("num").value) + 1;
+    }
+
+    //makes the - button do subtraction
+    function down(min) {
+        document.getElementById("num").value = parseInt(document.getElementById("num").value) - 1;
+        //stops it going below 1
+        if (document.getElementById("num").value <= parseInt(min)) {
+            document.getElementById("num").value = min;
+        }
+    }
+
+    //hide the overlay class
+    //$(".overlay").hide();
+
+
+    // https://stackoverflow.com/questions/26759529/jquery-ui-dropdrag-inventory-with-stackable-items
+
+
+    //inventory draggability
+    //what you see being dragged
+    $(function () {
+        function createHelper() {
+            return $("<div />", {
+                css: {
+                    border: "2px solid #444",
+                    background: "yellow",
+                    height: 75,
+                    width: 75
+                }
+            });
+        }
+
+        var item_isStackable = "";
+        $(".item").draggable({
+            scroll: true,
+            revert: function (isValidEl) {
+                //conditions under which it's not draggable
+                if (isValidEl) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            helper: createHelper,
+            start: function () {
+                $(this).effect("highlight", {}, 1000);
+            },
+            drag: function (event, ui) {
+                item_isStackable = $(this).hasClass("stackable");
+                //adds to var item_isStackable if it has the class of stackable
+            },
+        });
+//inventory droppability
+        $(".item-cell").droppable({
+            accept: ".item",
+            //item-cell will only accept .item
+            drop: function (event, ui) {
+                //large drop function
+                var item = $(this).find(".item");
+                if (item.length == 0) {
+                    console.log("Inserting");
+                    ui.draggable.detach().appendTo($(this));
+                    //if inv slot is empty insert item
+                } else if ($(this).context.innerHTML.includes(ui.draggable.context.innerHTML) == true && item_isStackable == true && item.hasClass("stackable") && ui.draggable.filter(function () {
+                    var d = this;
+                    return item.filter(function () {
+                        return d == this;
+                    }).length > 0;
+                }).length === 0) {
+                    //1st check if droppable and stackable are identical items
+                    //2nd check if both clone AND original are stackable
+                    //3rd stop (droppable) clone stacking with original
+                    console.log("Combining Items");
+                    ui.draggable.detach();
+                    //if it worked destroy the (draggable) clone
+                } else {
+                    console.log("Reverting Position");
+                    ui.draggable.animate(ui.draggable.data().origPosition, "slow");
+                    //if not dropped in a cell revert everything back
+                }
+            }
+        });
+    });
+
+
+</script>
+</html>
