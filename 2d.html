@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+
+    .container {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        overflow: hidden;
+        background-color: transparent;
+        background-image: linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 76%, transparent 77%, transparent);
+        background-size: 40px 40px;
+        background-position: 0 0;
+        width: 1920px;
+        height: 1080px;
+        background-color: #1d1f20;
+    }
+
+    .box {
+        color: White;
+        font-weight: 600;
+        text-align: center;
+        font-size: 10px;
+        font-family: Verdana;
+        position: absolute;
+        border: 1px dashed red;
+        background-color: rgba(255, 0, 0, 0.2);
+        -webkit-transform: translate(0px, 0px);
+        -moz-transform: translate(0px, 0px);
+        -ms-transform: translate(0px, 0px);
+        -o-transform: translate(0px, 0px);
+        transform: translate(0px, 0px);
+    }
+    .box.blue {
+        border: 1px dashed blue;
+        background-color: rgba(0, 0, 255, 0.2);
+    }
+
+    .box.green {
+        border: 1px dashed green;
+        background-color: rgba(0, 128, 0, 0.2);
+    }
+
+    .box.orange {
+        border: 1px dashed orange;
+        background-color: rgba(255, 165, 0, 0.2);
+    }
+
+    .box.selected {
+        border: 1px solid red;
+        background-color: rgba(255, 0, 0, 0.5);
+    }
+
+    .box.selected.blue {
+        border: 1px solid blue;
+        background-color: rgba(0, 0, 255, 0.5);
+    }
+
+    .box.selected.green {
+        border: 1px solid green;
+        background-color: rgba(0, 128, 0, 0.5);
+    }
+
+    .box.selected.orange {
+        border: 1px solid orange;
+        background-color: rgba(255, 165, 0, 0.5);
+    }
+
+    .box span {
+        position: absolute;
+        display: none;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        font-size: 1.2em;
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 2px;
+    }
+
+    .box.moving > span, .box.resizing > span {
+        display: block;
+    }
+
+    .box .resize-helper {
+        display: none;
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border: 2px solid LightGrey;
+        -webkit-border-radius: 6px;
+        -moz-border-radius: 6px;
+        -ms-border-radius: 6px;
+        -o-border-radius: 6px;
+        border-radius: 6px;
+        background-color: Grey;
+    }
+
+    .box .resize-helper.rh-n {
+        left: 50%;
+        top: -5px;
+        cursor: n-resize;
+    }
+
+    .box .resize-helper.rh-s {
+        left: 50%;
+        bottom: -5px;
+        cursor: s-resize;
+    }
+
+    .box .resize-helper.rh-e {
+        right: -5px;
+        top: 50%;
+        cursor: e-resize;
+    }
+
+    .box .resize-helper.rh-w {
+        left: -5px;
+        top: 50%;
+        cursor: w-resize;
+    }
+
+    .box .resize-helper.rh-ne {
+        right: -5px;
+        top: -5px;
+        cursor: ne-resize;
+    }
+
+    .box .resize-helper.rh-nw {
+        left: -5px;
+        top: -5px;
+        cursor: nw-resize;
+    }
+
+    .box .resize-helper.rh-se {
+        right: -5px;
+        bottom: -5px;
+        cursor: se-resize;
+    }
+
+    .box .resize-helper.rh-sw {
+        left: -5px;
+        bottom: -5px;
+        cursor: sw-resize;
+    }
+
+    .box.selected > .resize-helper {
+        display: block;
+    }
+</style>
+<body>
+
+<div class="container"></div>
+<div class="container"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+</body>
+<script type="text/javascript">
+    (function () {
+        var Box, Editor,
+            __bind = function (fn, me) {
+                return function () {
+                    return fn.apply(me, arguments);
+                };
+            };
+
+        Editor = (function () {
+            function Editor(container) {
+                this.onPointerUp = __bind(this.onPointerUp, this);
+                this.onPointerMove = __bind(this.onPointerMove, this);
+                this.onPointerDown = __bind(this.onPointerDown, this);
+                this.prevent = __bind(this.prevent, this);
+                this.dom = $(".container");
+                this.objects = [];
+                this.selected = [];
+                this.dragging = false;
+                this.dom.on("mousedown touchstart", this.onPointerDown);
+                this.dom.on("mousemove touchmove", this.onPointerMove);
+                this.dom.on("mouseup touchend touchcancel", this.onPointerUp);
+            }
+
+            Editor.prototype.createBox = function (l, t, r, b, parent, styleClass) {
+                var box;
+                box = new Box(this, l, t, r, b, parent, styleClass);
+                this.objects.push(box);
+                return box;
+            };
+
+            Editor.prototype.clearSelections = function () {
+                $.each(this.objects, (function (_this) {
+                    return function (i, obj) {
+                        return obj.unselect();
+                    };
+                })(this));
+                return this.selected = [];
+            };
+
+            Editor.prototype.isSelected = function (obj) {
+                return this.selected.indexOf(obj) !== -1;
+            };
+
+            Editor.prototype.prevent = function (e) {
+                e.preventDefault();
+                return e.stopPropagation();
+            };
+
+            Editor.prototype.onPointerDown = function (e) {
+                var box, target;
+                this.prevent(e);
+                this.dragging = false;
+                this.resizing = false;
+                this.moving = false;
+                target = $(e.target).closest(".box");
+                if (target.length > 0) {
+                    box = target.data("obj");
+                    if (this.selected.length > 0) {
+                        $.each(this.objects, (function (_this) {
+                            return function (i, obj) {
+                                if (obj !== box) {
+                                    return obj.unselect();
+                                }
+                            };
+                        })(this));
+                    }
+                    if (box.selected !== true) {
+                        box.select();
+                        this.selected = [box];
+                    }
+                } else {
+                    this.clearSelections();
+                }
+                if (this.selected.length > 0) {
+                    this.dragging = true;
+                    if ($(e.target).hasClass("resize-helper")) {
+                        console.log("Resizing");
+                        this.resizing = true;
+                        this.resizingHelper = $(e.target);
+                        $.each(this.selected, (function (_this) {
+                            return function (i, obj) {
+                                return obj.startResizing();
+                            };
+                        })(this));
+                    } else {
+                        console.log("Moving");
+                        this.dragging = true;
+                        this.moving = true;
+                        $.each(this.selected, (function (_this) {
+                            return function (i, obj) {
+                                return obj.startMoving();
+                            };
+                        })(this));
+                    }
+                    return this.startPos = {
+                        x: e.pageX,
+                        y: e.pageY
+                    };
+                }
+            };
+
+            Editor.prototype.onPointerMove = function (e) {
+                var dx, dy;
+                this.prevent(e);
+                if (this.dragging) {
+                    dx = e.pageX - this.startPos.x;
+                    dy = e.pageY - this.startPos.y;
+                    return $.each(this.selected, (function (_this) {
+                        return function (i, obj) {
+                            if (_this.moving) {
+                                obj.applyMoving(dx, dy);
+                            }
+                            if (_this.resizing) {
+                                return obj.applyResizing(_this.resizingHelper, dx, dy);
+                            }
+                        };
+                    })(this));
+                }
+            };
+
+            Editor.prototype.onPointerUp = function (e) {
+                this.prevent(e);
+                if (this.dragging) {
+                    this.dragging = false;
+                    if (this.moving) {
+                        this.moving = false;
+                        $.each(this.selected, (function (_this) {
+                            return function (i, obj) {
+                                return obj.stopMoving();
+                            };
+                        })(this));
+                    }
+                    if (this.resizing) {
+                        this.resizing = false;
+                        return $.each(this.selected, (function (_this) {
+                            return function (i, obj) {
+                                return obj.stopResizing();
+                            };
+                        })(this));
+                    }
+                }
+            };
+
+            return Editor;
+
+        })();
+
+        Box = (function () {
+            function Box(_at_editor, l, t, r, b, _at_parent, _at_styleClass) {
+                this.editor = _at_editor;
+                this.parent = _at_parent;
+                this.styleClass = _at_styleClass;
+                this.pos = {
+                    left: l,
+                    top: t,
+                    right: r,
+                    bottom: b
+                };
+                this.dom = null;
+                this.selected = false;
+                this.parentDom = this.parent ? this.parent.dom : this.editor.dom;
+                this.render();
+            }
+
+            Box.prototype.setCss = function () {
+                return this.dom.css({
+                    left: this.pos.left + "%",
+                    top: this.pos.top + "%",
+                    width: this.getWidth() + "%",
+                    height: this.getHeight() + "%"
+                });
+            };
+
+            Box.prototype.render = function () {
+                if (this.dom == null) {
+                    this.dom = $("<div/>").addClass("box");
+                    if (this.styleClass != null) {
+                        this.dom.addClass(this.styleClass);
+                    }
+                    this.dom.data("obj", this);
+                    this.dom.append($("<span/>"));
+                    this.createHelpers();
+                    this.dom.appendTo(this.parentDom);
+                }
+                return this.setCss();
+            };
+
+            Box.prototype.createHelpers = function () {
+                this.dom.append($("<div/>").attr("direction", "n").addClass("resize-helper rh-n"));
+                this.dom.append($("<div/>").attr("direction", "s").addClass("resize-helper rh-s"));
+                this.dom.append($("<div/>").attr("direction", "e").addClass("resize-helper rh-e"));
+                this.dom.append($("<div/>").attr("direction", "w").addClass("resize-helper rh-w"));
+                this.dom.append($("<div/>").attr("direction", "ne").addClass("resize-helper rh-ne"));
+                this.dom.append($("<div/>").attr("direction", "se").addClass("resize-helper rh-se"));
+                this.dom.append($("<div/>").attr("direction", "nw").addClass("resize-helper rh-nw"));
+                return this.dom.append($("<div/>").attr("direction", "sw").addClass("resize-helper rh-sw"));
+            };
+
+            Box.prototype.select = function () {
+                if (this.selected !== true) {
+                    this.selected = true;
+                    return this.dom.addClass("selected");
+                }
+            };
+
+            Box.prototype.unselect = function () {
+                if (this.selected) {
+                    this.selected = false;
+                    return this.dom.removeClass("selected");
+                }
+            };
+
+            Box.prototype.startMoving = function () {
+                this.dom.addClass("moving");
+                this.savePos();
+                return this.dom.find("> span").text("X: " + this.pos.left + "%, Y: " + this.pos.top + "%");
+            };
+
+            Box.prototype.stopMoving = function () {
+                return this.dom.removeClass("moving");
+            };
+
+            Box.prototype.startResizing = function () {
+                this.dom.addClass("resizing");
+                this.savePos();
+                return this.dom.find("> span").text("W: " + (this.getWidth()) + "%, H: " + (this.getHeight()) + "%");
+            };
+
+            Box.prototype.stopResizing = function () {
+                return this.dom.removeClass("resizing");
+            };
+
+            Box.prototype.savePos = function () {
+                this.origPos = this.pos;
+                this.origPos.width = this.getWidth;
+                this.origPos.height = this.getHeight;
+                return console.log("savePos");
+            };
+
+            Box.prototype.percentW = function (x) {
+                return Math.round(x * 100.0 / this.parentDom.width());
+            };
+
+            Box.prototype.percentH = function (y) {
+                return Math.round(y * 100.0 / this.parentDom.height());
+            };
+
+            Box.prototype.checkLimits = function (v) {
+                return Math.max(Math.min(100, v), 0);
+            };
+
+            Box.prototype.getWidth = function () {
+                return 100 - this.pos.right - this.pos.left;
+            };
+
+            Box.prototype.getHeight = function () {
+                return 100 - this.pos.bottom - this.pos.top;
+            };
+
+            Box.prototype.applyMoving = function (dx, dy) {
+                var dxp, dyp, newPos;
+                dxp = this.percentW(dx);
+                dyp = this.percentH(dy);
+                newPos = {
+                    left: this.origPos.left + dxp,
+                    top: this.origPos.top + dyp,
+                    right: this.origPos.right - dxp,
+                    bottom: this.origPos.bottom - dyp
+                };
+                this.pos = this.checkBorders(newPos);
+                this.render();
+                return this.dom.find("> span").text("X: " + this.pos.left + "%, Y: " + this.pos.top + "%" + '1번 렉');
+            };
+
+            Box.prototype.applyResizing = function (resizingHelper, dx, dy) {
+                var dir, dxp, dyp, newPos;
+                dxp = this.percentW(dx);
+                dyp = this.percentH(dy);
+                newPos = $.extend({}, this.origPos);
+                dir = resizingHelper.attr("direction");
+                switch (dir) {
+                    case "n":
+                        newPos.top += dyp;
+                        break;
+                    case "e":
+                        newPos.right -= dxp;
+                        break;
+                    case "s":
+                        newPos.bottom -= dyp;
+                        break;
+                    case "w":
+                        newPos.left += dxp;
+                        break;
+                    case "ne":
+                        newPos.top += dyp;
+                        newPos.right -= dxp;
+                        break;
+                    case "se":
+                        newPos.bottom -= dyp;
+                        newPos.right -= dxp;
+                        break;
+                    case "nw":
+                        newPos.top += dyp;
+                        newPos.left += dxp;
+                        break;
+                    case "sw":
+                        newPos.bottom -= dyp;
+                        newPos.left += dxp;
+                }
+                this.pos = this.checkBorders(newPos);
+                this.render();
+                return this.dom.find("> span").text("W: " + (this.getWidth()) + "%, H: " + (this.getHeight()) + "%");
+            };
+
+            Box.prototype.checkBorders = function (newPos) {
+                if (newPos.left < 0) {
+                    newPos.left = 0;
+                    newPos.right = 100 - this.getWidth();
+                }
+                if (newPos.top < 0) {
+                    newPos.top = 0;
+                    newPos.bottom = 100 - this.getHeight();
+                }
+                if (newPos.right < 0) {
+                    newPos.right = 0;
+                    newPos.left = 100 - this.getWidth();
+                }
+                if (newPos.bottom < 0) {
+                    newPos.bottom = 0;
+                    newPos.top = 100 - this.getHeight();
+                }
+                return newPos;
+            };
+
+            return Box;
+
+        })();
+
+        $(function () {
+            var box1, box2, box3, box4, editor;
+            editor = new Editor($(".container"));
+            box1 = editor.createBox(20, 10, 50, 70, null, "red");
+            box2 = editor.createBox(10, 20, 70, 40, box1, "green");
+            box2 = editor.createBox(5, 20, 70, 40, box1, "green");
+            box3 = editor.createBox(70, 70, 10, 10, null, "blue");
+            return box4 = editor.createBox(15, 45, 55, 30, null, "orange");
+        });
+
+    }).call(this);
+
+
+</script>
+</html>
