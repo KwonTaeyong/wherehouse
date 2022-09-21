@@ -27,8 +27,8 @@
     <div id="board"></div>
 </div>
 <div class="controls"><a class="view-top" onclick="sokoban.restart()"></a>
-    <h2></h2><a onclick="sokoban.rotate(false)">왼쪽</a><a onclick="sokoban.rotate(true)">오른쪽</a>
-    <h2 class="not-low-quality"></h2><a class="not-low-quality" onclick="sokoban.toggleQuality()">숨기기</a>
+   <a onclick="sokoban.rotate(false)">왼쪽</a><a onclick="sokoban.rotate(true)">오른쪽</a>
+    <a class="not-low-quality" onclick="sokoban.toggleQuality()">숨기기</a>
 </div>
 <div class="hidden" id="success-message">Well done!</div>
 <div id="player-markup" style="display:none">
@@ -82,7 +82,7 @@
 </div>
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">B동 창고</h5>
@@ -125,7 +125,7 @@
 </div>
 
 <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="width:830px">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel2">B동 창고</h5>
